@@ -3,11 +3,15 @@ version: "3"
 services:
   code-server:
     container_name: code-server
-    image: codercom/code-server
+    image: cavalrytactics/code-server:latest
     ports:
       - "8080:8080"
     volumes:
       - "${PWD}:/home/coder/project"
-      - "${HOME}/.local/share/code-server:/home/coder/.local/share/code-server"
-    environment:
-      PASSWORD: ${PASSWORD}
+      - "${PWD}/dev-env/code-server:/home/coder/.local/share/code-server"
+      - "${PWD}/dev-env/oh-my-zsh/.zshrc:/home/coder/.zshrc"
+    entrypoint:
+      - dumb-init
+      - code-server
+      - --auth=none
+      - --disable-telemetry

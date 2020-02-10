@@ -16,9 +16,9 @@ RUN yarn \
 	&& rm -r /src/source
 
 # We deploy with Ubuntu so that devs have a familiar environment.
-FROM ubuntu:18.04
+FROM python:3.7-buster
 
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get upgrade -y && apt-get install -y \
 	openssl \
 	net-tools \
 	git \
@@ -28,13 +28,16 @@ RUN apt-get update && apt-get install -y \
 	vim \
 	curl \
 	wget \
+	tmux \
+	zsh \
+	nano \
 	&& rm -rf /var/lib/apt/lists/*
 
 RUN locale-gen en_US.UTF-8
 # We cannot use update-locale because docker will not use the env variables
 # configured in /etc/default/locale so we need to set it manually.
 ENV LC_ALL=en_US.UTF-8 \
-	SHELL=/bin/bash
+	SHELL=/bin/zsh
 
 RUN adduser --gecos '' --disabled-password coder && \
 	echo "coder ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers.d/nopasswd
@@ -46,6 +49,10 @@ RUN mkdir -p /home/coder/project \
   && mkdir -p /home/coder/.local/share/code-server
 
 WORKDIR /home/coder/project
+RUN sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+COPY ./dev-env/oh-my-zsh/.zshrc /home/.zshrc
+COPY ./dev-env/code-server/extensions /home/coder/.local/share/code-server/extensions
+COPY ./dev-env/code-server/User/settings.json /home/coder/.local/share/code-server/User/settings.json
 
 # This ensures we have a volume mounted even if the user forgot to do bind
 # mount. So that they do not lose their data if they delete the container.
